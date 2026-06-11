@@ -1,4 +1,4 @@
-package com.luketran.identity.identity_service.infracstructure;
+package com.luketran.identity.identity_service.infrastructure;
 
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
