@@ -28,6 +28,10 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<!-- Flyway config - override via CLI: mvn flyway:migrate -Dflyway.password=xxx -->
+		<flyway.url>jdbc:postgresql://127.0.0.1:5432/identity</flyway.url>
+		<flyway.user>postgres</flyway.user>
+		<flyway.password></flyway.password>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -146,9 +150,9 @@
 				<groupId>org.flywaydb</groupId>
 				<artifactId>flyway-maven-plugin</artifactId>
 				<configuration>
-					<url>jdbc:postgresql://127.0.0.1:5432/identity</url>
-					<user>postgres</user>
-					<password>admin</password>
+					<url>${flyway.url}</url>
+					<user>${flyway.user}</user>
+					<password>${flyway.password}</password>
 					<locations>filesystem:src/main/resources/db/migration</locations>
 				</configuration>
 				<dependencies>
