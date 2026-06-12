@@ -1,28 +1,36 @@
 # Identity Service - Project Rules
 
-## Architecture: Clean Architecture (Java Spring Boot)
+## Architecture: Strict Clean Architecture (Java Spring Boot, Multi-Module Maven)
 
-### Layer Structure
+### Module Structure
 
-- **domain/** - Entities, enums, value objects, domain exceptions, repository interfaces. NO framework dependencies except JPA entity annotations.
-- **application/** - Use case services, DTOs (request/response), mappers. Depends only on domain.
-- **infrastructure/** - JPA repository implementations, Spring configurations, security filters, external adapters. Implements domain interfaces.
-- **presentation/** - REST controllers, request/response handling, API documentation annotations. Thin layer that delegates to application services.
-- Base package: `com.luketran.identity.identity_service`
+- **domain/** - Pure POJOs: entities, enums, value objects, domain exceptions, repository interfaces (ports). ZERO framework dependency (only Lombok).
+- **application/** - Use case services, DTOs (request/response), helpers. Depends only on domain.
+- **infrastructure/** - JPA entity classes, MapStruct mappers (Domain ↔ JPA), repository adapters (implements domain ports), Flyway migrations. Depends on domain.
+- **webapi/** - REST controllers, Spring Security config, JWT filter, Spring Boot entry point. Assembly module (builds executable JAR). Depends on application + infrastructure.
+- Base package: `com.luketran.identity`
+- Module-specific sub-packages: `com.luketran.identity.domain`, `com.luketran.identity.application`, `com.luketran.identity.infrastructure`, `com.luketran.identity.webapi`
 
 ### Dependency Rules
 
-- domain depends on NOTHING (pure Java + JPA annotations only)
+- domain depends on NOTHING (pure Java + Lombok only)
 - application depends on domain only
-- infrastructure depends on domain (implements interfaces)
-- presentation depends on application (calls services, uses DTOs)
-- The Spring Boot main class scans all sub-packages automatically via `@SpringBootApplication`
+- infrastructure depends on domain (implements port interfaces)
+- webapi depends on application + infrastructure (assembly point)
+- NEVER import from a higher layer (e.g., domain must never import from application)
+
+### Domain Entity vs JPA Entity (Critical)
+
+- **Domain entities** (in `domain/entities/`) are plain Java classes (POJO) with NO JPA annotations
+- **JPA entities** (in `infrastructure/persistence/entities/`) have `@Entity`, `@Table`, `@Column` — these map to the database
+- **MapStruct mappers** (in `infrastructure/persistence/mappers/`) convert between the two
+- **Repository adapters** (in `infrastructure/persistence/adapters/`) implement domain port interfaces using JPA repositories
 
 ### Package Conventions
 
 - One class per file
 - Package names: lowercase, no underscores in package segments
-- Class placement must respect layer boundaries - never import from a higher layer
+- Class placement must respect layer boundaries
 
 ---
 
@@ -30,9 +38,12 @@
 
 ### File Location
 
-All migration SQL files go in: `src/main/resources/db/migration/`
+All migration SQL files go in: `infrastructure/src/main/resources/db/migration/`
 
-Spring Boot auto-detects this location via `classpath:db/migration`. Do NOT place migration files inside Java packages.
+Run migrations from project root:
+```bash
+mvn flyway:migrate -pl :infrastructure -Dflyway.password=xxx
+```
 
 ### Naming Convention (STRICT)
 
@@ -103,22 +114,56 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - No unused imports
 - No empty catch blocks
 
-### Entity Classes (domain layer)
+### Domain Entity Classes (domain layer)
 
+- Pure POJOs with Lombok annotations only (`@Getter`, `@Setter`, `@Builder`, etc.)
+- NO JPA annotations (`@Entity`, `@Table`, `@Column` are FORBIDDEN here)
+- NO framework imports (no Spring, no Jakarta Persistence)
+- Use Java types: `UUID`, `String`, `LocalDateTime`, enums
+- Business logic methods belong here
+- Use a base class with common fields (id, createdAt, deletedAt)
+
+### JPA Entity Classes (infrastructure layer)
+
+- Located in `infrastructure/persistence/entities/`
 - Annotate with `@Entity`, `@Table(name = "table_name")`
 - Use `@Id` + `@GeneratedValue(strategy = GenerationType.UUID)` for primary key
 - Use `@Column(name = "column_name")` to match snake_case DB columns
 - Soft delete: `@Column(name = "deleted_at") private LocalDateTime deletedAt`
 - Relationships: prefer `FetchType.LAZY`
-- Use `@MappedSuperclass` for base entity with common fields (id, createdAt, deletedAt)
-- Temporal fields use `LocalDateTime` (Java) mapped to `TIMESTAMP` (PostgreSQL)
+- Use `@MappedSuperclass` for base JPA entity with common fields
+- Naming: `{Domain}JpaEntity` (e.g., `AccountJpaEntity`)
 
-### Repository Interfaces (infracstructure layer)
+### MapStruct Mappers (infrastructure layer)
 
-- Extend `JpaRepository<Entity, UUID>`
+- Located in `infrastructure/persistence/mappers/`
+- Annotate with `@Mapper(componentModel = "spring")`
+- Naming: `{Domain}PersistenceMapper` (e.g., `AccountPersistenceMapper`)
+- Methods: `toDomain(JpaEntity)` and `toJpaEntity(DomainEntity)`
+- MapStruct processor + lombok-mapstruct-binding configured in parent POM
+
+### Repository Interfaces — Ports (domain layer)
+
+- Located in `domain/repositories/`
+- Plain Java interfaces (no Spring annotations)
+- Methods return domain entities, not JPA entities
+- Naming: `{Domain}Repository` (e.g., `AccountRepository`)
+
+### Repository Adapters (infrastructure layer)
+
+- Located in `infrastructure/persistence/adapters/`
+- Annotate with `@Repository` (Spring component)
+- Implements domain port interface
+- Delegates to JPA repository + uses MapStruct mapper for conversion
+- Naming: `{Domain}RepositoryAdapter` (e.g., `AccountRepositoryAdapter`)
+
+### JPA Repositories (infrastructure layer)
+
+- Located in `infrastructure/persistence/jpa/`
+- Extend `JpaRepository<JpaEntity, UUID>`
 - Custom queries: use `@Query` with JPQL or native SQL
-- Naming: `{Entity}Repository`
-- Place in `infracstructure.persistence` sub-package
+- Naming: `{Domain}JpaRepository` (e.g., `AccountJpaRepository`)
+- These are internal to infrastructure, NOT exposed to other layers
 
 ### Service Classes (application layer)
 
@@ -128,6 +173,7 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Use `@Transactional(readOnly = true)` on read-only methods
 - Throw domain-specific exceptions, not generic Spring exceptions
 - Prefer `Optional` over null returns
+- Depend on domain repository interfaces (ports), not JPA repositories directly
 
 ### DTOs (application layer)
 
@@ -135,9 +181,9 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Response DTOs: `{Domain}Response` or `{Domain}DetailResponse`
 - Use Jakarta validation annotations (`@NotBlank`, `@Size`, `@Email`, `@NotNull`)
 - DTOs are records or Lombok `@Data` classes - never entities
-- Place in `application.dto.request` and `application.dto.response` sub-packages
+- Place in `application/dto/request` and `application/dto/response` sub-packages
 
-### REST Controllers (infracstructure layer)
+### REST Controllers (webapi layer)
 
 - Annotate with `@RestController` + `@RequestMapping("/api/v1/...")`
 - Return `ResponseEntity<ApiResponse<T>>`
@@ -147,7 +193,7 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Authenticated user endpoints: `/api/v1/me/...`
 - Use `@Valid` on request body parameters
 
-### Security
+### Security (webapi layer)
 
 - Spring Security 6 filter chain configuration (SecurityFilterChain bean)
 - JWT validation via custom `OncePerRequestFilter`
@@ -155,7 +201,7 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Custom `@RequireScope` annotation for permission checks
 - Stateless sessions (`SessionCreationPolicy.STATELESS`)
 
-### Error Handling
+### Error Handling (webapi layer)
 
 - `@RestControllerAdvice` global exception handler
 - Consistent response format: `{"success": bool, "data": T, "error": {...}}`
@@ -172,8 +218,10 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Unit tests: JUnit 5 + Mockito
 - Integration tests: `@SpringBootTest` + Testcontainers (PostgreSQL)
 - Test class naming: `{Class}Test` for unit, `{Class}IntegrationTest` for integration
-- Flyway auto-migrates the test database (no separate test migration config needed)
+- Flyway auto-migrates the test database
 - Test file location mirrors main source structure under `src/test/java/`
+- Domain tests need NO Spring context (pure POJO)
+- Infrastructure tests use `@DataJpaTest` + Testcontainers
 
 ---
 
@@ -185,7 +233,7 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Prefer composition over inheritance
 - Keep methods short (under 30 lines ideally)
 - Use meaningful variable and method names - code should be self-documenting
-- Configuration values belong in `application.yaml`, not hardcoded
+- Configuration values belong in `application.yaml` (webapi module), not hardcoded
 
 ---
 
@@ -195,7 +243,10 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Migration tool: Flyway (not Liquibase)
 - Password hashing: BCrypt via Spring Security's `PasswordEncoder`
 - JWT library: JJWT (io.jsonwebtoken)
+- Entity mapping: MapStruct (compile-time, not runtime reflection)
 - Cache: Caffeine (in-memory)
 - API docs: SpringDoc OpenAPI (Swagger UI at `/swagger-ui.html`)
 - No OAuth providers (scope limited to password-based auth)
 - Soft delete pattern: `deleted_at` column, filter with `WHERE deleted_at IS NULL`
+- `application.yaml` lives in webapi module (only the runnable module needs Spring config)
+- Flyway plugin configured in infrastructure module POM
