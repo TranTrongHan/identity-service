@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: identity-service
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/identity
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: '0'

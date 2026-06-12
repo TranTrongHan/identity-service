@@ -41,3 +41,4 @@ identity-service/src/main/resources/application-*.yaml
 
 ### Tool-specific ###
 .snowflake/
+.mvn
