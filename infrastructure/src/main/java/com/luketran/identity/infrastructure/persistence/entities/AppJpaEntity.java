@@ -1,10 +1,10 @@
 package com.luketran.identity.infrastructure.persistence.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,4 +29,14 @@ public class AppJpaEntity extends BaseJpaEntity {
 
     @Column(name = "session_lifetime_minutes", nullable = false)
     private int sessionLifetimeMinutes;
+
+    // === Relationships (inverse side, optional) ===
+    @OneToMany(mappedBy = "app", fetch = FetchType.LAZY)
+    private List<AppRoleJpaEntity> roles;
+
+    @OneToMany(mappedBy = "app", fetch = FetchType.LAZY)
+    private List<AppPermissionJpaEntity> permissions;
+
+    @OneToMany(mappedBy = "app", fetch = FetchType.LAZY)
+    private List<AppAccessJpaEntity> accesses;
 }

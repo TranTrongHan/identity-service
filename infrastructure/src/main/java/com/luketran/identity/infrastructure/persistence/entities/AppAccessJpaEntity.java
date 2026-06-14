@@ -14,15 +14,28 @@ import java.util.UUID;
 })
 public class AppAccessJpaEntity extends BaseJpaEntity {
 
-    @Column(name = "account_id", nullable = false)
+    @Column(name = "account_id", nullable = false, insertable = false, updatable = false)
     private UUID accountId;
 
-    @Column(name = "app_id", nullable = false)
+    @Column(name = "app_id", nullable = false, insertable = false, updatable = false)
     private UUID appId;
 
-    @Column(name = "role_id")
+    @Column(name = "role_id", insertable = false, updatable = false)
     private UUID roleId;
 
     @Column(name = "scope", nullable = false, columnDefinition = "TEXT DEFAULT ''")
     private String scope;
+
+    // === Relationships ===
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private AccountJpaEntity account;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "app_id")
+    private AppJpaEntity app;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private AppRoleJpaEntity role;
 }

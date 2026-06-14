@@ -11,8 +11,6 @@ public interface AppRepository extends BaseRepository<App> {
 
     Optional<App> findByCode(String code);
 
-    Optional<App> findActiveByCode(String code);
-
     App save(App app);
 
     void deleteById(UUID id);

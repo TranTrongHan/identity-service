@@ -19,9 +19,18 @@ public class AppRolePermissionJpaEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "role_id", nullable = false)
+    @Column(name = "role_id", nullable = false, insertable = false, updatable = false)
     private UUID roleId;
 
-    @Column(name = "permission_id", nullable = false)
+    @Column(name = "permission_id", nullable = false, insertable = false, updatable = false)
     private UUID permissionId;
+
+    // === Relationships ===
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private AppRoleJpaEntity role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "permission_id")
+    private AppPermissionJpaEntity permission;
 }

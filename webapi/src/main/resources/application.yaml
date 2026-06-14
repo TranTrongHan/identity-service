@@ -4,11 +4,11 @@ spring:
   datasource:
     url: jdbc:postgresql://127.0.0.1:5432/identity
     username: postgres
-    password: admin
+    password: 123456
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
   flyway:
     enabled: false

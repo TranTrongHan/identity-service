@@ -10,6 +10,7 @@ import java.util.UUID;
 @Setter
 public class AppPermission extends BaseEntity {
 
+
     private UUID appId;
 
     private String code;

@@ -11,6 +11,8 @@ public interface AccountAuthRepository extends BaseRepository<AccountAuth> {
 
     Optional<AccountAuth> findByFieldTypeAndFieldValue(AuthFieldType fieldType, String fieldValue);
 
+    Optional<AccountAuth> findWithAccount(AuthFieldType fieldType, String fieldValue);
+
     List<AccountAuth> findAllByAccountId(UUID accountId);
 
     AccountAuth save(AccountAuth accountAuth);

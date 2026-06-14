@@ -1,12 +1,11 @@
 package com.luketran.identity.infrastructure.persistence.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -31,4 +30,14 @@ public class AccountJpaEntity extends BaseJpaEntity {
 
     @Column(name = "access_denied_until")
     private LocalDateTime accessDeniedUntil;
+
+    // === Relationships (inverse side, optional) ===
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<AccountAuthJpaEntity> authMethods;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<AppAccessJpaEntity> appAccesses;
+
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
+    private List<AccountSessionJpaEntity> sessions;
 }
