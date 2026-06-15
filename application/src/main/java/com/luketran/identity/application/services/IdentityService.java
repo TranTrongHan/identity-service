@@ -1,7 +1,6 @@
 package com.luketran.identity.application.services;
 
-import com.luketran.identity.application.dto.request.LoginAppInputRequest;
-import com.luketran.identity.application.dto.request.LoginPasswordInputRequest;
+import com.luketran.identity.application.dto.request.LoginPasswordRequest;
 import com.luketran.identity.application.dto.response.TokenDataResponse;
 import com.luketran.identity.application.helpers.PasswordHelper;
 import com.luketran.identity.application.helpers.ScopeHelper;
@@ -37,13 +36,13 @@ public class IdentityService implements com.luketran.identity.application.interf
     private final TokenService tokenService;
 
     @Override
-    public TokenDataResponse loginByPassword(LoginAppInputRequest appInputRequest, LoginPasswordInputRequest passwordInputRequest) {
+    public TokenDataResponse loginByPassword(LoginPasswordRequest request) {
         // 1. Tìm App
-        App app = appRepository.findByCode(appInputRequest.getAppCode())
+        App app = appRepository.findByCode(request.getAppCode())
                 .orElseThrow(() -> new ResourceNotFoundException("App not found"));
 
         // 2. Tìm AccountAuth (username → account)
-        AccountAuth accountAuth = accountAuthRepository.findByFieldTypeAndFieldValue(AuthFieldType.USERNAME, passwordInputRequest.getUsername())
+        AccountAuth accountAuth = accountAuthRepository.findByFieldTypeAndFieldValue(AuthFieldType.USERNAME, request.getUsername())
                 .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
 
         // 3. Load Account
@@ -56,7 +55,7 @@ public class IdentityService implements com.luketran.identity.application.interf
         }
 
         // 5. Verify password
-        if (!PasswordHelper.verifyPassword(passwordInputRequest.getPassword(), account.getSecretKey(), account.getPassword())) {
+        if (!PasswordHelper.verifyPassword(request.getPassword(), account.getSecretKey(), account.getPassword())) {
             onWrongLogin(account);
         }
         onSuccessLogin(account);

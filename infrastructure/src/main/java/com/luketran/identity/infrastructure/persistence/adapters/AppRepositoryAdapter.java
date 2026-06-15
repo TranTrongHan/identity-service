@@ -23,7 +23,7 @@ public class AppRepositoryAdapter implements AppRepository {
      */
     @Override
     public Optional<App> findById(UUID id) {
-        return Optional.empty();
+        return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
     /**
@@ -31,7 +31,7 @@ public class AppRepositoryAdapter implements AppRepository {
      */
     @Override
     public List<App> findAll() {
-        return List.of();
+        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
     /**
@@ -51,7 +51,9 @@ public class AppRepositoryAdapter implements AppRepository {
      */
     @Override
     public App save(App app) {
-        return null;
+        AppJpaEntity jpaEntity = mapper.toJpaEntity(app);
+        AppJpaEntity saved = jpaRepository.save(jpaEntity);
+        return mapper.toDomain(saved);
     }
 
     /**
@@ -59,7 +61,7 @@ public class AppRepositoryAdapter implements AppRepository {
      */
     @Override
     public void deleteById(UUID id) {
-
+        jpaRepository.deleteById(id);
     }
 
     /**
@@ -68,6 +70,6 @@ public class AppRepositoryAdapter implements AppRepository {
      */
     @Override
     public boolean existsById(UUID id) {
-        return false;
+        return jpaRepository.existsById(id);
     }
 }

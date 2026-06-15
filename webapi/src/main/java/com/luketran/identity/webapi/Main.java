@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication(scanBasePackages = "com.luketran.identity")
 @EnableJpaRepositories(basePackages = "com.luketran.identity.infrastructure.persistence.jpa")
-@EntityScan(basePackages = "com.luketran.identity.infrastructure.persistence.entities")
+@EntityScan(basePackages = "com.luketran.identity.infrastructure.persistence")
 public class Main {
 
     public static void main(String[] args) {

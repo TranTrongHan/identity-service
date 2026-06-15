@@ -182,6 +182,8 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Use Jakarta validation annotations (`@NotBlank`, `@Size`, `@Email`, `@NotNull`)
 - DTOs are records or Lombok `@Data` classes - never entities
 - Place in `application/dto/request` and `application/dto/response` sub-packages
+- **Swagger Documentation**: Annotate DTOs with `@Schema`. Include `description`, realistic `example` values, and `requiredMode` mapping to Jakarta validation constraints (e.g., `Schema.RequiredMode.REQUIRED`).
+- **Sensitive Fields**: Hide internal or sensitive fields from API documentation using `@Schema(hidden = true)`.
 
 ### REST Controllers (webapi layer)
 
@@ -192,6 +194,12 @@ CREATE INDEX IF NOT EXISTS idx_table_reference_id ON table_name(reference_id);
 - Public auth endpoints: `/api/v1/auth/...`
 - Authenticated user endpoints: `/api/v1/me/...`
 - Use `@Valid` on request body parameters
+- **API Documentation (Swagger/OpenAPI 3)**:
+  - Class level: Annotate with `@Tag` to categorize endpoints.
+  - Method level: Annotate with `@Operation` (summary, description).
+  - Error documenting: Annotate with `@io.swagger.v3.oas.annotations.responses.ApiResponse` (use fully qualified name to avoid classname collision with DTO `ApiResponse`) inside `@ApiResponses` to cover all possible HTTP statuses (200, 400, 401, 403, 429, 500) and link error DTO schema (`ApiResponse.class`).
+  - Security mapping: Use `@SecurityRequirement(name = "bearerAuth")` on all secured endpoints.
+  - Internal endpoints: Annotate with `@Hidden` to hide helper or testing endpoints from Swagger UI.
 
 ### Security (webapi layer)
 

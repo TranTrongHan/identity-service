@@ -67,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Những path không cần check JWT (performance optimization)
         String path = request.getServletPath();
         return path.startsWith("/auth/")
-                || path.startsWith("/swagger-ui/")
+                || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs");
     }
 }

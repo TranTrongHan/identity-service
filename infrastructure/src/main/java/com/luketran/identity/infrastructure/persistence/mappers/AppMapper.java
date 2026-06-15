@@ -7,4 +7,6 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AppMapper {
     App toDomain(AppJpaEntity appJpaEntity);
+
+    AppJpaEntity toJpaEntity(App app);
 }
