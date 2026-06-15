@@ -54,7 +54,8 @@ public class AccountSessionRepositoryAdapter implements AccountSessionRepository
      */
     @Override
     public Optional<AccountSession> findById(UUID id) {
-        return Optional.empty();
+
+        return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
     /**
@@ -90,5 +91,10 @@ public class AccountSessionRepositoryAdapter implements AccountSessionRepository
     @Override
     public boolean existsById(UUID id) {
         return false;
+    }
+
+    @Override
+    public void deleteAllByAccountId(UUID accountId) {
+        jpaRepository.deleteAllByAccountId(accountId);
     }
 }

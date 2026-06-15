@@ -1,0 +1,81 @@
+package com.luketran.identity.webapi.controller.admin;
+
+import com.luketran.identity.application.dto.response.ApiResponse;
+import com.luketran.identity.application.interfaces.AccountLogoutService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/Admin/Account")
+@SecurityRequirement(name = "bearerAuth")
+@PreAuthorize("hasAuthority('admin')")
+@Tag(name = "Admin - Tài khoản", description = "API quản trị tài khoản (yêu cầu quyền admin)")
+public class AdminAccountController {
+
+    private final AccountLogoutService accountLogoutService;
+
+    @PutMapping("/{id}/ForceLogout")
+    @Operation(summary = "Ép đăng xuất tài khoản", description = "Xóa toàn bộ phiên đăng nhập (sessions) của tài khoản và tạo flag force-logout.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Ép đăng xuất thành công"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Chưa xác thực",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "Không có quyền admin",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "Lỗi hệ thống bất ngờ",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    public ApiResponse<Void> createForceLogout(@PathVariable UUID id) {
+        accountLogoutService.createForceLogout(id);
+        return ApiResponse.ok(null);
+    }
+
+    @GetMapping("/{id}/ForceLogout")
+    @Operation(summary = "Kiểm tra trạng thái force-logout", description = "Kiểm tra tài khoản có đang bị ép đăng xuất không (không consume flag, chỉ check).")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Trả về true nếu account đang bị force-logout, false nếu không"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Chưa xác thực",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "Không có quyền admin",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "Lỗi hệ thống bất ngờ",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    public ApiResponse<Boolean> getForceLogoutStatus(@PathVariable UUID id) {
+        return ApiResponse.ok(accountLogoutService.isForceLoggedOut(id));
+    }
+}

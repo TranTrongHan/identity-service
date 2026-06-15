@@ -42,4 +42,29 @@ public class AccountSessionService implements com.luketran.identity.application.
             return accountSessionRepository.save(session);
         }
     }
+
+    /**
+     * @param sessionId
+     * @return
+     */
+    @Override
+    public AccountSession getById(UUID sessionId) {
+        return accountSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account Session not found"));
+    }
+
+    /**
+     * @param sessionId
+     * @return
+     */
+    @Override
+    public AccountSession extend(UUID sessionId) {
+        AccountSession accountSession = this.getById(sessionId);
+        App app = appService.findById(accountSession.getAppId());
+        accountSession.setExpiredAt(LocalDateTime.now().plusMinutes(app.getSessionLifetimeMinutes()));
+        return accountSessionRepository.save(accountSession);
+
+    }
+
+
 }

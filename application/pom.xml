@@ -19,10 +19,16 @@
             <artifactId>domain</artifactId>
         </dependency>
 
-        <!-- Spring DI container (@Service, @Component, @Transactional) -->
+        <!-- Spring DI container (@Service, @Component) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Spring transaction support for @Transactional -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
         </dependency>
 
         <!-- Bean validation runtime (@Valid, @NotNull, @Size...) -->
@@ -47,7 +53,6 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations-jakarta</artifactId>
-            <version>2.2.28</version>
         </dependency>
     </dependencies>
 

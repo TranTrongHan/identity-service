@@ -1,21 +1,24 @@
 package com.luketran.identity.webapi.controller.common;
 
 import com.luketran.identity.application.dto.request.LoginPasswordRequest;
+import com.luketran.identity.application.dto.request.RefreshTokenRequest;
 import com.luketran.identity.application.dto.response.ApiResponse;
 import com.luketran.identity.application.dto.response.TokenDataResponse;
+import com.luketran.identity.application.interfaces.AccountLogoutService;
 import com.luketran.identity.application.interfaces.IdentityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Xác thực & Định danh", description = "Các API công khai hỗ trợ đăng nhập và làm mới token")
 public class IdentityController {
     private final IdentityService identityService;
+    private final AccountLogoutService accountLogoutService;
+
 
     @PostMapping("/Login/Password")
     @PreAuthorize("permitAll()")
@@ -55,5 +60,64 @@ public class IdentityController {
     })
     public ApiResponse<TokenDataResponse> loginByPassword(@Valid @RequestBody LoginPasswordRequest request) {
         return ApiResponse.ok(identityService.loginByPassword(request));
+    }
+
+    @PostMapping("/RefreshToken")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Làm mới Access Token", description = "Dùng Refresh Token (Session UUID) để gia hạn phiên đăng nhập và nhận cặp tokens mới.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Refresh thành công, trả về cặp tokens mới"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Refresh token không hợp lệ hoặc rỗng",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Phiên đăng nhập đã hết hạn hoặc không tồn tại",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "Lỗi hệ thống bất ngờ",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    public ApiResponse<TokenDataResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return ApiResponse.ok(identityService.refreshToken(request));
+    }
+
+    @GetMapping("/ForceLogout")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Yêu cầu ForceLogout", description = "Kiểm tra và thực hiện ForceLogout đối với tài khoản hiện tại từ Security Context.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Thực hiện thành công (trả về true nếu tài khoản bị bắt buộc đăng xuất và đã bị xóa trạng thái logout, ngược lại trả về false)"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Token không hợp lệ hoặc chưa đăng nhập",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "Lỗi hệ thống bất ngờ",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    public ApiResponse<Boolean> forceLogout(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new com.luketran.identity.domain.exceptions.AuthenticationException("User not authenticated");
+        }
+        
+        // Trích xuất principal là Account ID (dạng String UUID) từ authentication object
+        UUID accountId = UUID.fromString((String) authentication.getPrincipal());
+        
+        return ApiResponse.ok(accountLogoutService.checkForceLogout(accountId));
     }
 }

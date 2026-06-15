@@ -5,6 +5,7 @@ import com.luketran.identity.domain.exceptions.AccessDeniedException;
 import com.luketran.identity.domain.exceptions.AuthenticationException;
 import com.luketran.identity.domain.exceptions.BruteForceException;
 import com.luketran.identity.domain.exceptions.ResourceNotFoundException;
+import com.luketran.identity.domain.exceptions.SessionInvalidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,6 +17,13 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(SessionInvalidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleSessionInvalid(SessionInvalidException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("SESSION_INVALID", ex.getMessage()));
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(ResourceNotFoundException ex) {

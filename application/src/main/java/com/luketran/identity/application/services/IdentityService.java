@@ -1,6 +1,7 @@
 package com.luketran.identity.application.services;
 
 import com.luketran.identity.application.dto.request.LoginPasswordRequest;
+import com.luketran.identity.application.dto.request.RefreshTokenRequest;
 import com.luketran.identity.application.dto.response.TokenDataResponse;
 import com.luketran.identity.application.helpers.PasswordHelper;
 import com.luketran.identity.application.helpers.ScopeHelper;
@@ -12,6 +13,7 @@ import com.luketran.identity.domain.enums.SettingCode;
 import com.luketran.identity.domain.exceptions.AuthenticationException;
 import com.luketran.identity.domain.exceptions.BruteForceException;
 import com.luketran.identity.domain.exceptions.ResourceNotFoundException;
+import com.luketran.identity.domain.exceptions.SessionInvalidException;
 import com.luketran.identity.domain.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,8 @@ public class IdentityService implements com.luketran.identity.application.interf
     private final AppRolePermissionRepository appRolePermissionRepository;
     private final AppPermissionRepository appPermissionRepository;
     private final TokenService tokenService;
+    private final AccountLogoutRepository accountLogoutRepository;
+
 
     @Override
     public TokenDataResponse loginByPassword(LoginPasswordRequest request) {
@@ -60,11 +65,70 @@ public class IdentityService implements com.luketran.identity.application.interf
         }
         onSuccessLogin(account);
 
-        // 6. Load AppAccess (account ↔ app relationship + role + scope)
+        // Clear force-logout flag nếu có (khi user login lại thành công)
+        accountLogoutRepository.deleteByAccountId(account.getId());
+
+        // 6. Create/extend session (refresh token)
+        AccountSession session = accountSessionService.createOrExtend(account.getId(), app.getId());
+
+        // 7. Generate access token
+        String accessToken = generateAccessToken(account, app);
+
+        // 8. Return response
+        TokenDataResponse response = new TokenDataResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(session.getId().toString());
+        return response;
+    }
+
+    /**
+     * @param input
+     * @return
+     */
+    @Override
+    public TokenDataResponse refreshToken(RefreshTokenRequest input) {
+        UUID sessionId;
+        try {
+            sessionId = UUID.fromString(input.getRefreshToken());
+        } catch (IllegalArgumentException e) {
+            throw new SessionInvalidException();
+        }
+
+        AccountSession session;
+        try {
+            session = accountSessionService.getById(sessionId);
+        } catch (ResourceNotFoundException e) {
+            throw new SessionInvalidException();
+        }
+
+        if (session == null || LocalDateTime.now().isAfter(session.getExpiredAt())) {
+            throw new SessionInvalidException();
+        }
+
+        // Load Account & App to generate access token
+        Account account = accountRepository.findById(session.getAccountId())
+                .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
+        App app = appRepository.findById(session.getAppId())
+                .orElseThrow(() -> new ResourceNotFoundException("App not found"));
+
+        // Extend session
+        session = accountSessionService.extend(session.getId());
+
+        // Generate access token
+        String accessToken = generateAccessToken(account, app);
+
+        TokenDataResponse tokenDataResponse = new TokenDataResponse();
+        tokenDataResponse.setRefreshToken(session.getId().toString());
+        tokenDataResponse.setAccessToken(accessToken);
+        return tokenDataResponse;
+    }
+
+    private String generateAccessToken(Account account, App app) {
+        // Load AppAccess (account ↔ app relationship + role + scope)
         AppAccess access = appAccessRepository.findByAccountIdAndAppId(account.getId(), app.getId())
                 .orElseThrow(() -> new AuthenticationException("No access to this app"));
 
-        // 7. Resolve role + effective scope
+        // Resolve role + effective scope
         AppRole role = null;
         Set<String> rolePermissionCodes = new HashSet<>();
 
@@ -77,7 +141,7 @@ public class IdentityService implements com.luketran.identity.application.interf
 
             // Load role's permission IDs
             List<AppRolePermission> rolePermissions = appRolePermissionRepository.findAllByRoleId(access.getRoleId());
-            Set<java.util.UUID> permissionIds = new HashSet<>();
+            Set<UUID> permissionIds = new HashSet<>();
             for (AppRolePermission rp : rolePermissions) {
                 permissionIds.add(rp.getPermissionId());
             }
@@ -94,17 +158,7 @@ public class IdentityService implements com.luketran.identity.application.interf
         String effectiveScope = ScopeHelper.resolveEffectiveScope(
                 access.getScope(), rolePermissionCodes, allPermissions);
 
-        // 8. Create/extend session (refresh token)
-        AccountSession session = accountSessionService.createOrExtend(account.getId(), app.getId());
-
-        // 9. Generate access token
-        String accessToken = tokenService.generateAccessToken(account, app, role, effectiveScope);
-
-        // 10. Return response
-        TokenDataResponse response = new TokenDataResponse();
-        response.setAccessToken(accessToken);
-        response.setRefreshToken(session.getId().toString());
-        return response;
+        return tokenService.generateAccessToken(account, app, role, effectiveScope);
     }
 
     private void onWrongLogin(Account account) {

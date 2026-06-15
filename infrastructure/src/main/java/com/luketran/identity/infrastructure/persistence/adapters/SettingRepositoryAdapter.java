@@ -6,11 +6,11 @@ import com.luketran.identity.domain.repositories.SettingRepository;
 import com.luketran.identity.infrastructure.persistence.entities.SettingJpaEntity;
 import com.luketran.identity.infrastructure.persistence.jpa.SettingJpaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class SettingRepositoryAdapter implements SettingRepository {
 

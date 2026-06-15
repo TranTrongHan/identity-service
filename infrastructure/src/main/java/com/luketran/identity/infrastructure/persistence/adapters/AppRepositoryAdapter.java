@@ -6,13 +6,13 @@ import com.luketran.identity.infrastructure.persistence.entities.AppJpaEntity;
 import com.luketran.identity.infrastructure.persistence.jpa.AppJpaRepository;
 import com.luketran.identity.infrastructure.persistence.mappers.AppMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component
+@Repository
 @RequiredArgsConstructor
 public class AppRepositoryAdapter implements AppRepository {
     private final AppJpaRepository jpaRepository;

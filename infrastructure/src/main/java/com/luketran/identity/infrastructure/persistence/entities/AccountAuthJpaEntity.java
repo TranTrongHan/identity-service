@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "account_auth", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_account_auth_field_type_value", columnNames = {"field_type", "field_value"})
+        @UniqueConstraint(name = "uq_account_auth_field_type_value", columnNames = { "field_type", "field_value" })
 })
 public class AccountAuthJpaEntity {
 
