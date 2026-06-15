@@ -3,7 +3,9 @@ package com.luketran.identity.infrastructure.persistence.adapters;
 import com.luketran.identity.domain.entities.AccountAuth;
 import com.luketran.identity.domain.enums.AuthFieldType;
 import com.luketran.identity.domain.repositories.AccountAuthRepository;
+import com.luketran.identity.infrastructure.persistence.entities.AccountAuthJpaEntity;
 import com.luketran.identity.infrastructure.persistence.jpa.AccountAuthJpaRepository;
+import com.luketran.identity.infrastructure.persistence.jpa.AccountJpaRepository;
 import com.luketran.identity.infrastructure.persistence.mappers.AccountAuthMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountAuthRepositoryAdapter implements AccountAuthRepository {
     private final AccountAuthJpaRepository jpaRepository;
+    private final AccountJpaRepository accountJpaRepository;
     private final AccountAuthMapper mapper;
 
     /**
@@ -38,13 +41,11 @@ public class AccountAuthRepositoryAdapter implements AccountAuthRepository {
         return Optional.ofNullable(mapper.toDomain(jpaRepository.findWithAccount(fieldType, fieldValue)));
     }
 
-    /**
-     * @param accountId
-     * @return
-     */
     @Override
     public List<AccountAuth> findAllByAccountId(UUID accountId) {
-        return List.of();
+        return jpaRepository.findAllByAccountId(accountId).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     /**
@@ -70,7 +71,12 @@ public class AccountAuthRepositoryAdapter implements AccountAuthRepository {
      */
     @Override
     public AccountAuth save(AccountAuth accountAuth) {
-        return null;
+        AccountAuthJpaEntity jpaEntity = mapper.toEntity(accountAuth);
+        if (accountAuth.getAccountId() != null) {
+            jpaEntity.setAccount(accountJpaRepository.getReferenceById(accountAuth.getAccountId()));
+        }
+        AccountAuthJpaEntity saved = jpaRepository.save(jpaEntity);
+        return mapper.toDomain(saved);
     }
 
     /**

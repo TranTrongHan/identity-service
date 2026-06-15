@@ -25,10 +25,10 @@ public class AccountJpaEntity extends BaseJpaEntity {
     @Column(name = "password", length = 100)
     private String password;
 
-    @Column(name = "wrong_login_count", nullable = false)
+    @Column(name = "wrong_login_count", nullable = true)
     private int wrongLoginCount;
 
-    @Column(name = "access_denied_until")
+    @Column(name = "access_denied_until", nullable = true)
     private LocalDateTime accessDeniedUntil;
 
     // === Relationships (inverse side, optional) ===

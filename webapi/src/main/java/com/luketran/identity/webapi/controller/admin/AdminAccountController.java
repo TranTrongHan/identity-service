@@ -1,13 +1,16 @@
 package com.luketran.identity.webapi.controller.admin;
 
+import com.luketran.identity.application.dto.request.AccountCreateInputRequest;
 import com.luketran.identity.application.dto.response.ApiResponse;
 import com.luketran.identity.application.interfaces.AccountLogoutService;
+import com.luketran.identity.application.interfaces.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +26,7 @@ import java.util.UUID;
 public class AdminAccountController {
 
     private final AccountLogoutService accountLogoutService;
+    private final AccountService accountService;
 
     @PutMapping("/{id}/ForceLogout")
     @Operation(summary = "Ép đăng xuất tài khoản", description = "Xóa toàn bộ phiên đăng nhập (sessions) của tài khoản và tạo flag force-logout.")
@@ -77,5 +81,37 @@ public class AdminAccountController {
     })
     public ApiResponse<Boolean> getForceLogoutStatus(@PathVariable UUID id) {
         return ApiResponse.ok(accountLogoutService.isForceLoggedOut(id));
+    }
+
+    @PostMapping
+    @Operation(summary = "Tạo tài khoản mới", description = "Tạo account mới với thông tin đăng nhập (username bắt buộc, email/phone tùy chọn). Password sẽ được hash với secret key ngẫu nhiên.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Tạo tài khoản thành công, trả về UUID của account"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Dữ liệu đầu vào không hợp lệ hoặc username/email/phone đã tồn tại",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Chưa xác thực",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "Không có quyền admin",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "500",
+            description = "Lỗi hệ thống bất ngờ",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))
+        )
+    })
+    public ApiResponse<UUID> create(@Valid @RequestBody AccountCreateInputRequest inputRequest) {
+        return ApiResponse.ok(accountService.create(inputRequest));
     }
 }

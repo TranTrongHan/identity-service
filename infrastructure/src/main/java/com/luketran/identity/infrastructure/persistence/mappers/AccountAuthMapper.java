@@ -9,4 +9,5 @@ import org.mapstruct.Mapper;
 public interface AccountAuthMapper {
     AccountAuth toDomain(AccountAuthJpaEntity accountAuthJpaEntity);
 
+    AccountAuthJpaEntity toEntity(AccountAuth domain);
 }

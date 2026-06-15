@@ -31,10 +31,10 @@ public class AccountSessionService implements com.luketran.identity.application.
 
         if (existing.isEmpty()) {
             AccountSession session = new AccountSession();
-            session.setId(UUID.randomUUID());
             session.setAccountId(accountId);
             session.setAppId(appId);
             session.setExpiredAt(LocalDateTime.now().plusMinutes(app.getSessionLifetimeMinutes()));
+
             return accountSessionRepository.save(session);
         } else {
             AccountSession session = existing.get();

@@ -177,7 +177,11 @@ public class IdentityService implements com.luketran.identity.application.interf
         account.setAccessDeniedUntil(accessDeniedUntil);
         accountRepository.save(account);
 
-        throw new BruteForceException(accessDeniedUntil);
+        if (accessDeniedUntil != null) {
+            throw new BruteForceException(accessDeniedUntil);
+        } else {
+            throw new AuthenticationException("Invalid credentials");
+        }
     }
 
     private void onSuccessLogin(Account account) {

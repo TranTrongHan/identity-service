@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.luketran.identity.domain.repositories.AccountLogoutRepository;
+import com.luketran.identity.infrastructure.persistence.jpa.AccountJpaRepository;
 import com.luketran.identity.infrastructure.persistence.jpa.AccountLogoutJpaRepository;
 import com.luketran.identity.infrastructure.persistence.mappers.AccountLogoutMapper;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountLogoutRepositoryAdapter implements AccountLogoutRepository {
     private final AccountLogoutJpaRepository jpaRepository;
+    private final AccountJpaRepository accountJpaRepository;
     private final AccountLogoutMapper mapper;
 
     @Override
@@ -47,6 +49,9 @@ public class AccountLogoutRepositoryAdapter implements AccountLogoutRepository {
     @Override
     public AccountLogout save(AccountLogout entity) {
         AccountLogoutJpaEntity jpaEntity = mapper.toJpaEntity(entity);
+        if (entity.getAccountId() != null) {
+            jpaEntity.setAccount(accountJpaRepository.getReferenceById(entity.getAccountId()));
+        }
         AccountLogoutJpaEntity saved = jpaRepository.save(jpaEntity);
         return mapper.toDomain(saved);
     }

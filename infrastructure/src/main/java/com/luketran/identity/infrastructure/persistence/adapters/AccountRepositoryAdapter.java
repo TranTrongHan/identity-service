@@ -53,4 +53,13 @@ public class AccountRepositoryAdapter implements AccountRepository {
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
     }
+
+    /**
+     * @param account
+     * @return
+     */
+    @Override
+    public Account create(Account account) {
+        return mapper.toDomain(jpaRepository.save(mapper.toJpaEntity(account)));
+    }
 }

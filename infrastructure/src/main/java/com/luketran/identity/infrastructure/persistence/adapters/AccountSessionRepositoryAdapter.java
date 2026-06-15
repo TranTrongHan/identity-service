@@ -6,7 +6,9 @@ import com.luketran.identity.domain.entities.App;
 import com.luketran.identity.domain.exceptions.ResourceNotFoundException;
 import com.luketran.identity.domain.repositories.AccountSessionRepository;
 import com.luketran.identity.infrastructure.persistence.entities.AccountSessionJpaEntity;
+import com.luketran.identity.infrastructure.persistence.jpa.AccountJpaRepository;
 import com.luketran.identity.infrastructure.persistence.jpa.AccountSessionJpaRepository;
+import com.luketran.identity.infrastructure.persistence.jpa.AppJpaRepository;
 import com.luketran.identity.infrastructure.persistence.mappers.AccountSessionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -20,6 +22,8 @@ import java.util.UUID;
 @Repository
 public class AccountSessionRepositoryAdapter implements AccountSessionRepository {
     private final AccountSessionJpaRepository jpaRepository;
+    private final AccountJpaRepository accountJpaRepository;
+    private final AppJpaRepository appJpaRepository;
     private final AccountSessionMapper mapper;
     /**
      * @param id
@@ -72,8 +76,15 @@ public class AccountSessionRepositoryAdapter implements AccountSessionRepository
      */
     @Override
     public AccountSession save(AccountSession entity) {
-        AccountSessionJpaEntity accountSessionJpaEntity = jpaRepository.save(mapper.toEntity(entity));
-        return mapper.toDomain(accountSessionJpaEntity);
+        AccountSessionJpaEntity accountSessionJpaEntity = mapper.toEntity(entity);
+        if (entity.getAccountId() != null) {
+            accountSessionJpaEntity.setAccount(accountJpaRepository.getReferenceById(entity.getAccountId()));
+        }
+        if (entity.getAppId() != null) {
+            accountSessionJpaEntity.setApp(appJpaRepository.getReferenceById(entity.getAppId()));
+        }
+        AccountSessionJpaEntity saved = jpaRepository.save(accountSessionJpaEntity);
+        return mapper.toDomain(saved);
     }
 
     /**

@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BruteForceException.class)
     public ResponseEntity<ApiResponse<Void>> handleBruteForce(BruteForceException ex) {
         Map<String, Object> details = new HashMap<>();
-        details.put("lockedUntil", ex.getLockedUntil().toString());
+        details.put("lockedUntil", ex.getLockedUntil() != null ? ex.getLockedUntil().toString() : "");
 
         return ResponseEntity
                 .status(HttpStatus.TOO_MANY_REQUESTS)

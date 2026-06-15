@@ -16,4 +16,6 @@ public interface AccountRepository extends BaseRepository<Account> {
     void deleteById(UUID id);
 
     boolean existsById(UUID id);
+
+    Account create(Account account);
 }

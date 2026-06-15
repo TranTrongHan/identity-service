@@ -64,10 +64,3 @@ VALUES (
     NOW()
 );
 
--- ============================================================
--- 5. System Settings (key-value configuration)
--- Chỉ seed những settings liên quan login/auth (bỏ email settings)
--- ============================================================
-INSERT INTO setting (code, value, description) VALUES
-    ('MAX_WRONG_LOGIN_ALLOWED', '3', 'Số lần login sai cho phép trước khi bị khóa tạm'),
-    ('WAIT_MINUTE_PER_WRONG_LOGIN', '5', 'Số phút phải chờ mỗi lần login sai (progressive lockout)');
