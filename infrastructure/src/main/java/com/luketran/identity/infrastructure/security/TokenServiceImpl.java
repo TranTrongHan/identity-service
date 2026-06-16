@@ -17,16 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * JWT Token generation bằng JJWT library.
+ * JWT Token generation using JJWT library.
  *
- * Mapping từ source mẫu (.NET):
- *   - issuer = access.App.Code           → app.getCode()
- *   - exp = App.TokenLifetime            → app.getTokenLifetimeMinutes()
- *   - sign = App.SigningKey (HMAC-SHA256) → app.getSigningKey()
- *   - claims: id, name, avatarLink, roleCode, roleName, scope
- *   - BỎ: lastSiteId, sites (không có phân quyền chi nhánh)
- *
- * Mỗi App có signing key riêng → token app A không valid cho app B (security isolation).
+ * Each App has its own signing key -> token from App A cannot be used in App B (security isolation).
  */
 @Service
 public class TokenServiceImpl implements TokenService {
@@ -37,12 +30,11 @@ public class TokenServiceImpl implements TokenService {
         // 1. Tạo signing key từ app.signingKey (128 chars → 512 bits, đủ cho HS256)
         SecretKey key = Keys.hmacShaKeyFor(app.getSigningKey().getBytes(StandardCharsets.UTF_8));
 
-        // 2. Tính thời gian (tương đương: DateTime.UtcNow.AddMinutes(access.App.TokenLifetime))
+        // 2. Compute expiry
         Instant now = Instant.now();
         Instant expiry = now.plus(app.getTokenLifetimeMinutes(), ChronoUnit.MINUTES);
 
         // 3. Build claims
-        //    Source mẫu: new Claim("id", account.Id), new Claim("name", account.Name), ...
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", account.getId().toString());
         claims.put("name", account.getName());

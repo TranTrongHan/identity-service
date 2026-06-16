@@ -3,6 +3,7 @@ package com.luketran.identity.domain.entities;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,4 +15,7 @@ public class AppRole extends BaseEntity {
     private String code;
 
     private String name;
+
+    // === Relations ===
+    private List<AppRolePermission> permissionItems;
 }

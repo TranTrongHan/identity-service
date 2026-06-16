@@ -1,6 +1,5 @@
 -- V2__seed_data.sql
 -- Purpose: Seed essential data for system bootstrap
--- Reference: source mẫu DataSeeds (Account, App, AppAccess, AccountAuth, Setting)
 
 -- ============================================================
 -- 1. IDENTITY App

@@ -16,4 +16,9 @@ public class AppAccess extends BaseEntity {
     private UUID roleId;
 
     private String scope;
+
+    // === Relations (populated via JOIN FETCH when needed) ===
+    private App app;
+
+    private AppRole role;
 }

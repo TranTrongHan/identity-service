@@ -13,17 +13,10 @@ public interface TokenService {
     /**
      * Sinh JWT access token.
      *
-     * Mapping từ source mẫu GenerateAccessToken(AppAccess access, string signKey, ...):
-     * - Bỏ siteSessionHeader, siteId (không có phân quyền chi nhánh)
-     * - Claims: id, name, avatarUrl, roleCode, roleName, scope
-     * - Issuer = app.code
-     * - Expiry = app.tokenLifetimeMinutes
-     * - Sign = app.signingKey (HMAC-SHA256)
-     *
-     * @param account        account đang login (lấy id, name, avatarUrl)
-     * @param app            app đang login vào (lấy code, signingKey, tokenLifetimeMinutes)
-     * @param role           role trong app (nullable — lấy roleCode, roleName)
-     * @param effectiveScope scope đã resolved (VD: "admin order.create order.view")
+     * @param account        account dang login (lay id, name, avatarUrl)
+     * @param app            app dang login vao (lay code, signingKey, tokenLifetimeMinutes)
+     * @param role           role trong app (nullable — lay roleCode, roleName)
+     * @param effectiveScope scope da resolved (VD: "admin order.create order.view")
      * @return JWT access token string
      */
     String generateAccessToken(Account account, App app, AppRole role, String effectiveScope);

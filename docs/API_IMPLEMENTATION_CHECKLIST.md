@@ -1,6 +1,6 @@
 # API Implementation Checklist
 
-So sanh voi source 2 (.NET identity.api) — danh sach cac API can implement cho identity-service (Java).
+Danh sach cac API can implement cho identity-service.
 
 ---
 

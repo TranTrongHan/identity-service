@@ -3,6 +3,8 @@ package com.luketran.identity.domain.entities;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class App extends BaseEntity {
@@ -18,4 +20,11 @@ public class App extends BaseEntity {
     private int tokenLifetimeMinutes;
 
     private int sessionLifetimeMinutes;
+
+    // === Relations ===
+    private List<AppRole> roles;
+
+    private List<AppPermission> permissions;
+
+    private List<AppAccess> accesses;
 }

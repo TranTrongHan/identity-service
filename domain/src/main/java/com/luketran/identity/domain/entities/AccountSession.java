@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Getter
 @Setter
-
 public class AccountSession {
 
     private UUID id;
@@ -20,4 +19,7 @@ public class AccountSession {
     private LocalDateTime expiredAt;
 
     private LocalDateTime createdAt;
+
+    // === Relations (populated via JOIN FETCH when needed) ===
+    private App app;
 }
