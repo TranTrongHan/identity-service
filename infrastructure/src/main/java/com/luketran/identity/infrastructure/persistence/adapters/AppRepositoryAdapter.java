@@ -72,4 +72,17 @@ public class AppRepositoryAdapter implements AppRepository {
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
     }
+
+    @Override
+    public List<App> findAllActive() {
+        return jpaRepository.findAllByDeletedAtIsNull().stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public void softDelete(UUID id) {
+        jpaRepository.findById(id).ifPresent(entity -> {
+            entity.setDeletedAt(java.time.LocalDateTime.now());
+            jpaRepository.save(entity);
+        });
+    }
 }

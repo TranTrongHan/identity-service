@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface AppRoleJpaRepository extends JpaRepository<AppRoleJpaEntity, UUID> {
     Optional<AppRoleJpaEntity> findByCodeAndAppIdAndDeletedAtIsNull(String code, UUID appId);
     List<AppRoleJpaEntity> findAllByAppIdAndDeletedAtIsNull(UUID appId);
+    List<AppRoleJpaEntity> findAllByDeletedAtIsNull();
 }

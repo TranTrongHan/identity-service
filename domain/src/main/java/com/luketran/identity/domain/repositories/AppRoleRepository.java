@@ -14,7 +14,11 @@ public interface AppRoleRepository extends BaseRepository<AppRole> {
 
     List<AppRole> findAllActiveByAppId(UUID appId);
 
+    List<AppRole> findAllActive();
+
     AppRole save(AppRole appRole);
 
     void deleteById(UUID id);
+
+    void softDelete(UUID id);
 }
