@@ -32,6 +32,13 @@ public class AppAccessRepositoryAdapter implements AppAccessRepository {
     }
 
     @Override
+    public List<AppAccess> findAllActiveByAppId(UUID appId) {
+        return jpaRepository.findAllByAppIdAndDeletedAtIsNull(appId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<AppAccess> findById(UUID id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
@@ -67,5 +74,13 @@ public class AppAccessRepositoryAdapter implements AppAccessRepository {
     @Override
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
+    }
+
+    @Override
+    public void softDelete(UUID id) {
+        jpaRepository.findById(id).ifPresent(entity -> {
+            entity.setDeletedAt(java.time.LocalDateTime.now());
+            jpaRepository.save(entity);
+        });
     }
 }

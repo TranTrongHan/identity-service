@@ -21,6 +21,16 @@ public class App extends BaseEntity {
 
     private int sessionLifetimeMinutes;
 
+    // === Google OAuth ===
+    private String googleClientId;
+
+    private String googleClientSecret;
+
+    private String googleAllowedDomain;
+
+    // === Reset Password ===
+    private String resetPasswordUrlTemplate;
+
     // === Relations ===
     private List<AppRole> roles;
 

@@ -12,7 +12,11 @@ public interface AppPermissionRepository extends BaseRepository<AppPermission> {
 
     List<AppPermission> findAllActiveByAppId(UUID appId);
 
+    List<AppPermission> findAllByAppId(UUID appId);
+
     AppPermission save(AppPermission appPermission);
 
     void deleteById(UUID id);
+
+    void softDelete(UUID id);
 }

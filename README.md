@@ -177,6 +177,24 @@ app_role                   app_permission             app_role_permission
 | DELETE | `/Admin/Account/{id}` | Soft-delete account |
 | PUT | `/Admin/Account/{id}/ForceLogout` | Force logout account |
 | GET | `/Admin/Account/{id}/ForceLogout` | Check force-logout status |
+| POST | `/Admin/App` | Create new App |
+| GET | `/Admin/App/All` | List all apps |
+| PUT | `/Admin/App/{id}` | Update App |
+| DELETE | `/Admin/App/{id}` | Soft-delete App |
+| POST | `/Admin/AppRole` | Create role |
+| GET | `/Admin/AppRole/All` | List all roles |
+| PUT | `/Admin/AppRole/{id}` | Update role |
+| PUT | `/Admin/AppRole/{id}/Permission` | Set permissions for role |
+| DELETE | `/Admin/AppRole/{id}` | Soft-delete role |
+| POST | `/Admin/AppPermission/Setup` | Bulk setup permissions (declarative sync) |
+| GET | `/Admin/AppPermission/All` | List all permissions by app |
+| DELETE | `/Admin/AppPermission/{id}` | Soft-delete permission |
+| POST | `/Admin/AppAccess` | Grant account access to app |
+| PUT | `/Admin/AppAccess/{id}` | Update access (role/scope) |
+| GET | `/Admin/AppAccess/{appCode}/{accountId}` | Get access by app + account |
+| DELETE | `/Admin/AppAccess/{id}` | Soft-delete access |
+| GET | `/AppRole/All` | List all roles |
+| GET | `/AppPermission/All` | List all permissions by app |
 
 See [docs/API_IMPLEMENTATION_CHECKLIST.md](docs/API_IMPLEMENTATION_CHECKLIST.md) for full planned API list.
 

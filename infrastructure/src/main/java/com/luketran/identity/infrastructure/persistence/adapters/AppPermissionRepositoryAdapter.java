@@ -34,6 +34,13 @@ public class AppPermissionRepositoryAdapter implements AppPermissionRepository {
     }
 
     @Override
+    public List<AppPermission> findAllByAppId(UUID appId) {
+        return jpaRepository.findAllByAppId(appId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<AppPermission> findAll() {
         return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
@@ -58,5 +65,13 @@ public class AppPermissionRepositoryAdapter implements AppPermissionRepository {
     @Override
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
+    }
+
+    @Override
+    public void softDelete(UUID id) {
+        jpaRepository.findById(id).ifPresent(entity -> {
+            entity.setDeletedAt(java.time.LocalDateTime.now());
+            jpaRepository.save(entity);
+        });
     }
 }

@@ -115,4 +115,57 @@ public class ScopeHelper {
 
         return sb.toString().trim();
     }
+
+    /**
+     * Lọc scope string, chỉ giữ lại tokens hợp lệ:
+     * - Non-permission tokens (VD: "admin") — luôn giữ
+     * - Permission codes (+code hoặc code) — giữ nếu nằm trong knownCodes
+     * - Negations (-code) — giữ nếu code nằm trong knownCodes
+     *
+     * Dùng sau khi Setup xóa permissions: loại bỏ codes "ma" khỏi scope.
+     */
+    public static String filterToKnownPermissions(String scopeString, Set<String> knownCodes) {
+        if (scopeString == null || scopeString.isBlank()) {
+            return "";
+        }
+
+        String[] parts = scopeString.trim().split("\\s+");
+        StringBuilder sb = new StringBuilder();
+
+        for (String part : parts) {
+            if (part.startsWith("-")) {
+                String code = part.substring(1);
+                if (knownCodes.contains(code)) {
+                    if (!sb.isEmpty()) sb.append(' ');
+                    sb.append(part);
+                }
+            } else if (part.startsWith("+")) {
+                String code = part.substring(1);
+                if (knownCodes.contains(code)) {
+                    if (!sb.isEmpty()) sb.append(' ');
+                    sb.append(part);
+                }
+            } else {
+                // Nếu là permission code đã biết, hoặc non-permission token (VD: "admin") → giữ
+                if (knownCodes.contains(part) || !isPermissionLike(part, knownCodes)) {
+                    if (!sb.isEmpty()) sb.append(' ');
+                    sb.append(part);
+                }
+            }
+        }
+
+        return sb.toString().trim();
+    }
+
+    /**
+     * Kiểm tra token có "giống" permission code không.
+     * Nếu token chứa dấu "." thì coi là permission code (VD: order.create).
+     * Token đơn giản (admin, manager) thì coi là non-permission → luôn giữ.
+     */
+    private static boolean isPermissionLike(String token, Set<String> knownCodes) {
+        // Nếu code nằm trong known → chắc chắn là permission
+        if (knownCodes.contains(token)) return true;
+        // Nếu chứa "." → likely permission format (order.create, product.view)
+        return token.contains(".");
+    }
 }

@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface AppPermissionJpaRepository extends JpaRepository<AppPermissionJpaEntity, UUID> {
     List<AppPermissionJpaEntity> findAllByAppIdAndDeletedAtIsNull(UUID appId);
+
+    List<AppPermissionJpaEntity> findAllByAppId(UUID appId);
 }

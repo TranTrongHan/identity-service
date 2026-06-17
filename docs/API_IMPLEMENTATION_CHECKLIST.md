@@ -13,6 +13,25 @@ Danh sach cac API can implement cho identity-service.
 | 3 | GET | `/Identity/ForceLogout` | User tu check minh co bi ep dang xuat khong (one-shot) |
 | 4 | PUT | `/Admin/Account/{id}/ForceLogout` | Admin ep dang xuat 1 account |
 | 5 | GET | `/Admin/Account/{id}/ForceLogout` | Admin check trang thai force-logout |
+| 8 | POST | `/Admin/App` | Tao App moi |
+| 9 | GET | `/Admin/App/All` | List tat ca apps |
+| 10 | PUT | `/Admin/App/{id}` | Cap nhat App |
+| 11 | DELETE | `/Admin/App/{id}` | Soft-delete App |
+| 12 | POST | `/Admin/AppRole` | Tao role |
+| 13 | GET | `/Admin/AppRole/All` | List tat ca roles |
+| 14 | PUT | `/Admin/AppRole/{id}` | Cap nhat role |
+| 15 | PUT | `/Admin/AppRole/{id}/Permission` | Gan permissions cho role |
+| 16 | DELETE | `/Admin/AppRole/{id}` | Soft-delete role |
+| 17 | POST | `/Admin/AppPermission` | Tao permission |
+| 18 | POST | `/Admin/AppPermission/Setup` | Bulk setup permissions (upsert) |
+| 19 | GET | `/Admin/AppPermission/All` | List tat ca permissions |
+| 21 | DELETE | `/Admin/AppPermission/{id}` | Soft-delete permission |
+| 22 | POST | `/Admin/AppAccess` | Gan account vao app |
+| 23 | PUT | `/Admin/AppAccess/{id}` | Cap nhat quyen truy cap |
+| 24 | GET | `/Admin/AppAccess/{appCode}/{accountId}` | Lay AppAccess theo app + account |
+| 25 | DELETE | `/Admin/AppAccess/{id}` | Soft-delete AppAccess |
+| 26 | GET | `/AppRole/All` | Lay danh sach roles |
+| 27 | GET | `/AppPermission/All` | Lay danh sach permissions |
 
 ---
 
@@ -52,15 +71,15 @@ Danh sach cac API can implement cho identity-service.
 | 17 | POST | `/Admin/AppPermission` | Tao permission | `{ appId, code, name, groupName?, description?, includePermissionCodes? }` | `{ id }` |
 | 18 | POST | `/Admin/AppPermission/Setup` | Bulk setup permissions (upsert by code) | `{ appCode, permissions: [...] }` | Success |
 | 19 | GET | `/Admin/AppPermission/All` | List tat ca permissions | — | List permissions |
-| 20 | GET | `/Admin/AppPermission/GroupTree` | Lay permission group tree | — | Tree structure |
+| ~~20~~ | ~~GET~~ | ~~`/Admin/AppPermission/GroupTree`~~ | ~~Bo — chua can phan cap~~ | — | — |
 | 21 | DELETE | `/Admin/AppPermission/{id}` | Soft-delete permission | — | Success |
 | 22 | POST | `/Admin/AppAccess` | Gan account vao app (tao AppAccess) | `{ accountId, appCode, roleCode?, scope? }` | `{ id }` |
 | 23 | PUT | `/Admin/AppAccess/{id}` | Cap nhat quyen truy cap | `{ roleCode?, scope? }` | Success |
 | 24 | GET | `/Admin/AppAccess/{appCode}/{accountId}` | Lay AppAccess theo app + account | — | AppAccess detail |
 | 25 | DELETE | `/Admin/AppAccess/{id}` | Soft-delete AppAccess | — | Success |
-| 26 | GET | `/AppRole/All` | (Public) Lay danh sach roles | — | List roles |
-| 27 | GET | `/AppPermission/All` | (Public) Lay danh sach permissions | — | List permissions |
-| 28 | GET | `/AppPermission/GroupTree` | (Public) Permission group tree | — | Tree structure |
+| 26 | GET | `/AppRole/All` | Lay danh sach roles (admin scope) | — | List roles |
+| 27 | GET | `/AppPermission/All` | Lay danh sach permissions (admin scope) | — | List permissions |
+| ~~28~~ | ~~GET~~ | ~~`/AppPermission/GroupTree`~~ | ~~Bo — chua can phan cap~~ | — | — |
 
 ### Logic can luu y:
 - **PUT /AppRole/{id}/Permission**: Xoa toan bo AppRolePermission cu cua role, insert lai theo list moi

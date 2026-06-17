@@ -30,6 +30,18 @@ public class AppJpaEntity extends BaseJpaEntity {
     @Column(name = "session_lifetime_minutes", nullable = false)
     private int sessionLifetimeMinutes;
 
+    @Column(name = "google_client_id", length = 200)
+    private String googleClientId;
+
+    @Column(name = "google_client_secret", length = 200)
+    private String googleClientSecret;
+
+    @Column(name = "google_allowed_domain", length = 200)
+    private String googleAllowedDomain;
+
+    @Column(name = "reset_password_url_template", length = 500)
+    private String resetPasswordUrlTemplate;
+
     // === Relationships (inverse side, optional) ===
     @OneToMany(mappedBy = "app", fetch = FetchType.LAZY)
     private List<AppRoleJpaEntity> roles;
