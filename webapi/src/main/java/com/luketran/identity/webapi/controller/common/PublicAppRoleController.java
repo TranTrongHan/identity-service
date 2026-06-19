@@ -1,8 +1,8 @@
 package com.luketran.identity.webapi.controller.common;
 
 import com.luketran.identity.application.dto.response.ApiResponse;
+import com.luketran.identity.application.dto.response.AppRoleDataResponse;
 import com.luketran.identity.application.interfaces.AppRoleService;
-import com.luketran.identity.domain.entities.AppRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,7 +30,7 @@ public class PublicAppRoleController {
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Thành công")
     })
-    public ApiResponse<List<AppRole>> getAll() {
+    public ApiResponse<List<AppRoleDataResponse>> getAll() {
         return ApiResponse.ok(appRoleService.findAll());
     }
 }

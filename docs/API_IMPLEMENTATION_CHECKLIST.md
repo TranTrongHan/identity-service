@@ -32,6 +32,10 @@ Danh sach cac API can implement cho identity-service.
 | 25 | DELETE | `/Admin/AppAccess/{id}` | Soft-delete AppAccess |
 | 26 | GET | `/AppRole/All` | Lay danh sach roles |
 | 27 | GET | `/AppPermission/All` | Lay danh sach permissions |
+| 30 | POST | `/Identity/Login/Google/WithAccess` | Dang nhap Google + tu tao AppAccess |
+| 33 | POST | `/Identity/Auth/Google` | Lay link dang nhap Google |
+| 36 | POST | `/Identity/ResetPassword` | Tao yeu cau reset password |
+| 37 | PUT | `/Identity/ResetPassword` | Dat lai password |
 
 ---
 

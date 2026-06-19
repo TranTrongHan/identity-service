@@ -3,8 +3,8 @@ package com.luketran.identity.webapi.controller.admin;
 import com.luketran.identity.application.dto.request.AppCreateRequest;
 import com.luketran.identity.application.dto.request.AppUpdateRequest;
 import com.luketran.identity.application.dto.response.ApiResponse;
+import com.luketran.identity.application.dto.response.AppDataResponse;
 import com.luketran.identity.application.interfaces.AppService;
-import com.luketran.identity.domain.entities.App;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,7 +42,7 @@ public class AdminAppController {
 
     @GetMapping("/All")
     @Operation(summary = "Lấy tất cả Apps", description = "Trả về danh sách tất cả app chưa bị xóa.")
-    public ApiResponse<List<App>> getAll() {
+    public ApiResponse<List<AppDataResponse>> getAll() {
         return ApiResponse.ok(appService.findAll());
     }
 

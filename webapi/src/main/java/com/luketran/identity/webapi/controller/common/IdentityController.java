@@ -1,8 +1,9 @@
 package com.luketran.identity.webapi.controller.common;
 
-import com.luketran.identity.application.dto.request.LoginPasswordRequest;
-import com.luketran.identity.application.dto.request.RefreshTokenRequest;
+import com.luketran.identity.application.dto.request.*;
 import com.luketran.identity.application.dto.response.ApiResponse;
+import com.luketran.identity.application.dto.response.GoogleAuthUrlResponse;
+import com.luketran.identity.application.dto.response.ResetPasswordDataResponse;
 import com.luketran.identity.application.dto.response.TokenDataResponse;
 import com.luketran.identity.application.interfaces.AccountLogoutService;
 import com.luketran.identity.application.interfaces.IdentityService;
@@ -119,5 +120,56 @@ public class IdentityController {
         UUID accountId = UUID.fromString((String) authentication.getPrincipal());
         
         return ApiResponse.ok(accountLogoutService.checkForceLogout(accountId));
+    }
+
+    @PostMapping("/Auth/Google")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Lấy Google OAuth URL", description = "Tạo link đăng nhập Google OAuth để frontend redirect người dùng.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Trả về URL redirect"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "App không tồn tại hoặc chưa cấu hình Google OAuth",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    public ApiResponse<GoogleAuthUrlResponse> getGoogleAuthUrl(@Valid @RequestBody GoogleAuthRequest request) {
+        return ApiResponse.ok(identityService.getGoogleAuthUrl(request));
+    }
+
+    @PostMapping("/Login/Google/WithAccess")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Đăng nhập Google kèm tạo AppAccess", description = "Exchange authorization code từ Google, xác thực user, tự tạo account + AppAccess nếu chưa có, trả về cặp tokens.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Đăng nhập thành công, trả về cặp tokens"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Xác thực Google thất bại hoặc domain không được phép",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    public ApiResponse<TokenDataResponse> loginByGoogleWithAccess(@Valid @RequestBody GoogleLoginWithAccessRequest request) {
+        return ApiResponse.ok(identityService.loginByGoogleWithAccess(request));
+    }
+
+    @PostMapping("/ResetPassword")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Tạo yêu cầu reset password", description = "Tạo reset password request cho account theo email. Trả về request ID (frontend dùng ID này để gọi PUT).")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Tạo thành công, trả về ID"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "App hoặc email không tồn tại",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    public ApiResponse<ResetPasswordDataResponse> createResetPasswordRequest(@Valid @RequestBody CreateResetPasswordRequest request) {
+        return ApiResponse.ok(identityService.createResetPasswordRequest(request));
+    }
+
+    @PutMapping("/ResetPassword")
+    @PreAuthorize("permitAll()")
+    @Operation(summary = "Đặt lại password", description = "Dùng reset token (requestId) để đặt lại password mới cho tài khoản.")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Reset thành công"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Token đã hết hạn",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Reset request không tồn tại",
+            content = @Content(schema = @Schema(implementation = ApiResponse.class)))
+    })
+    public ApiResponse<Void> executeResetPassword(@Valid @RequestBody ExecuteResetPasswordRequest request) {
+        identityService.executeResetPassword(request);
+        return ApiResponse.ok(null);
     }
 }

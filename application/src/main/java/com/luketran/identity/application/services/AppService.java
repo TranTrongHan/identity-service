@@ -2,6 +2,7 @@ package com.luketran.identity.application.services;
 
 import com.luketran.identity.application.dto.request.AppCreateRequest;
 import com.luketran.identity.application.dto.request.AppUpdateRequest;
+import com.luketran.identity.application.dto.response.AppDataResponse;
 import com.luketran.identity.domain.entities.App;
 import com.luketran.identity.domain.exceptions.ResourceNotFoundException;
 import com.luketran.identity.domain.repositories.AppRepository;
@@ -51,8 +52,18 @@ public class AppService implements com.luketran.identity.application.interfaces.
     }
 
     @Override
-    public List<App> findAll() {
-        return appRepository.findAllActive();
+    public List<AppDataResponse> findAll() {
+        return appRepository.findAllActive().stream().map(app -> {
+            AppDataResponse dto = new AppDataResponse();
+            dto.setId(app.getId());
+            dto.setCode(app.getCode());
+            dto.setName(app.getName());
+            dto.setDescription(app.getDescription());
+            dto.setTokenLifetimeMinutes(app.getTokenLifetimeMinutes());
+            dto.setSessionLifetimeMinutes(app.getSessionLifetimeMinutes());
+            dto.setCreatedAt(app.getCreatedAt());
+            return dto;
+        }).toList();
     }
 
     @Override
