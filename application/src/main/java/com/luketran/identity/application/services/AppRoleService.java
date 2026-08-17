@@ -3,6 +3,7 @@ package com.luketran.identity.application.services;
 import com.luketran.identity.application.dto.request.AppRoleCreateRequest;
 import com.luketran.identity.application.dto.request.AppRolePermissionSetRequest;
 import com.luketran.identity.application.dto.request.AppRoleUpdateRequest;
+import com.luketran.identity.application.dto.response.AppRoleDataResponse;
 import com.luketran.identity.domain.entities.AppRole;
 import com.luketran.identity.domain.entities.AppRolePermission;
 import com.luketran.identity.domain.exceptions.ResourceNotFoundException;
@@ -43,8 +44,16 @@ public class AppRoleService implements com.luketran.identity.application.interfa
     }
 
     @Override
-    public List<AppRole> findAll() {
-        return appRoleRepository.findAllActive();
+    public List<AppRoleDataResponse> findAll() {
+        return appRoleRepository.findAllActive().stream().map(role -> {
+            AppRoleDataResponse dto = new AppRoleDataResponse();
+            dto.setId(role.getId());
+            dto.setAppId(role.getAppId());
+            dto.setCode(role.getCode());
+            dto.setName(role.getName());
+            dto.setCreatedAt(role.getCreatedAt());
+            return dto;
+        }).toList();
     }
 
     @Override

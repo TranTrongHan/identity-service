@@ -4,8 +4,8 @@ import com.luketran.identity.application.dto.request.AppRoleCreateRequest;
 import com.luketran.identity.application.dto.request.AppRolePermissionSetRequest;
 import com.luketran.identity.application.dto.request.AppRoleUpdateRequest;
 import com.luketran.identity.application.dto.response.ApiResponse;
+import com.luketran.identity.application.dto.response.AppRoleDataResponse;
 import com.luketran.identity.application.interfaces.AppRoleService;
-import com.luketran.identity.domain.entities.AppRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,7 +43,7 @@ public class AdminAppRoleController {
 
     @GetMapping("/All")
     @Operation(summary = "Lấy tất cả Roles", description = "Trả về danh sách tất cả roles chưa bị xóa.")
-    public ApiResponse<List<AppRole>> getAll() {
+    public ApiResponse<List<AppRoleDataResponse>> getAll() {
         return ApiResponse.ok(appRoleService.findAll());
     }
 

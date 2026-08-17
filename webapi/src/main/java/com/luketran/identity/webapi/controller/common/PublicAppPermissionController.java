@@ -1,8 +1,8 @@
 package com.luketran.identity.webapi.controller.common;
 
 import com.luketran.identity.application.dto.response.ApiResponse;
+import com.luketran.identity.application.dto.response.AppPermissionDataResponse;
 import com.luketran.identity.application.interfaces.AppPermissionService;
-import com.luketran.identity.domain.entities.AppPermission;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,7 +36,7 @@ public class PublicAppPermissionController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Không tìm thấy App",
             content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
-    public ApiResponse<List<AppPermission>> getAll(@RequestParam String appCode) {
+    public ApiResponse<List<AppPermissionDataResponse>> getAll(@RequestParam String appCode) {
         return ApiResponse.ok(appPermissionService.findAllActiveByAppCode(appCode));
     }
 }

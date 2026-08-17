@@ -2,6 +2,7 @@ package com.luketran.identity.application.services;
 
 import com.luketran.identity.application.dto.request.AppPermissionSetupItemRequest;
 import com.luketran.identity.application.dto.request.AppPermissionSetupRequest;
+import com.luketran.identity.application.dto.response.AppPermissionDataResponse;
 import com.luketran.identity.application.helpers.ScopeHelper;
 import com.luketran.identity.domain.entities.App;
 import com.luketran.identity.domain.entities.AppAccess;
@@ -93,10 +94,21 @@ public class AppPermissionService implements com.luketran.identity.application.i
     }
 
     @Override
-    public List<AppPermission> findAllActiveByAppCode(String appCode) {
+    public List<AppPermissionDataResponse> findAllActiveByAppCode(String appCode) {
         App app = appRepository.findByCode(appCode)
                 .orElseThrow(() -> new ResourceNotFoundException("App not found with code: " + appCode));
-        return appPermissionRepository.findAllActiveByAppId(app.getId());
+        return appPermissionRepository.findAllActiveByAppId(app.getId()).stream().map(perm -> {
+            AppPermissionDataResponse dto = new AppPermissionDataResponse();
+            dto.setId(perm.getId());
+            dto.setAppId(perm.getAppId());
+            dto.setCode(perm.getCode());
+            dto.setName(perm.getName());
+            dto.setGroupName(perm.getGroupName());
+            dto.setDescription(perm.getDescription());
+            dto.setIncludePermissionCodes(perm.getIncludePermissionCodes());
+            dto.setCreatedAt(perm.getCreatedAt());
+            return dto;
+        }).toList();
     }
 
     @Override

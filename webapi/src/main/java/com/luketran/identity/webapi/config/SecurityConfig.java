@@ -67,6 +67,8 @@ public class SecurityConfig {
                 // Public: ai cũng truy cập được (không cần token)
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/Identity/Login/**").permitAll()
+                .requestMatchers("/Identity/Auth/**").permitAll()
+                .requestMatchers("/Identity/ResetPassword/**").permitAll()
                 .requestMatchers("/Identity/RefreshToken").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
