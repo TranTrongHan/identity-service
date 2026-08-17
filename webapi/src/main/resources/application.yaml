@@ -15,3 +15,7 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: '0'
+
+identity:
+  bypass-user-ids:
+    - "f4c4e181-f7c3-4880-b1ab-dd1c91e7f2df"

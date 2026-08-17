@@ -42,6 +42,10 @@ public class IdentityService implements com.luketran.identity.application.interf
 
     @Override
     public TokenDataResponse loginByPassword(LoginPasswordRequest request) {
+        if (request.getAppCode() == null || request.getAppCode().isBlank()) {
+            throw new AuthenticationException("AppCode required");
+        }
+
         // 1. Tìm App
         App app = appRepository.findByCode(request.getAppCode())
                 .orElseThrow(() -> new ResourceNotFoundException("App not found"));

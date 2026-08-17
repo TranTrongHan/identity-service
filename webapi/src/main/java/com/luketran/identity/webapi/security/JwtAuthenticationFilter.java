@@ -2,7 +2,9 @@ package com.luketran.identity.webapi.security;
 
 import com.luketran.identity.domain.entities.App;
 import com.luketran.identity.domain.repositories.AppRepository;
+import com.luketran.identity.webapi.config.IdentityProperties;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
@@ -30,7 +32,7 @@ import java.util.List;
  * 1. Extract Bearer token từ Authorization header
  * 2. Decode payload (unsigned) để lấy issuer (app code)
  * 3. Load App từ DB bằng app code → lấy signing key
- * 4. Verify JWT signature + expiry bằng JJWT
+ * 4. Verify JWT signature + expiry bằng JJWT (hỗ trợ bypass expiry cho bypassUserIds)
  * 5. Extract claims: id (account UUID), scope (space-separated permissions)
  * 6. Tạo Authentication object (principal = accountId, authorities = scope items)
  * 7. Set vào SecurityContextHolder → các endpoint phía sau có thể dùng
@@ -43,6 +45,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final AppRepository appRepository;
+    private final IdentityProperties identityProperties;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -91,12 +94,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // === STEP 4: Verify signature + expiry ===
             // JJWT tự động check: signature hợp lệ? token hết hạn chưa?
-            // Nếu bất kỳ check nào fail → throw exception → catch block bên dưới
-            Claims claims = Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            // Trường hợp token hết hạn nhưng user nằm trong danh sách bypassUserIds,
+            // JJWT đã verify signature thành công trước khi check expiry nên claims là an toàn và hợp lệ.
+            Claims claims;
+            try {
+                claims = Jwts.parser()
+                        .verifyWith(key)
+                        .build()
+                        .parseSignedClaims(token)
+                        .getPayload();
+            } catch (ExpiredJwtException ex) {
+                Claims expiredClaims = ex.getClaims();
+                String accountId = expiredClaims != null ? expiredClaims.get("id", String.class) : null;
+
+                if (accountId != null && identityProperties.getBypassUserIds() != null
+                        && identityProperties.getBypassUserIds().contains(accountId)) {
+                    claims = expiredClaims;
+                } else {
+                    throw ex;
+                }
+            }
 
             // === STEP 5: Extract claims ===
             String accountId = claims.get("id", String.class);
@@ -129,7 +146,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            // Token invalid, expired, signature mismatch, hoặc lỗi parse
+            // Token invalid, expired (không nằm trong bypass), signature mismatch, hoặc lỗi parse
             // → Không set Authentication → request sẽ là anonymous
             // → SecurityConfig .anyRequest().authenticated() sẽ reject với 401
             SecurityContextHolder.clearContext();

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,7 +32,7 @@ public class IdentityController {
 
     @PostMapping("/Login/Password")
     @PreAuthorize("permitAll()")
-    @Operation(summary = "Đăng nhập bằng mật khẩu", description = "Xác thực tài khoản và trả về cặp tokens (Access Token và Refresh Token) của người dùng đối với ứng dụng tương ứng.")
+    @Operation(summary = "Đăng nhập bằng mật khẩu", description = "Xác thực tài khoản và trả về cặp tokens (Access Token và Refresh Token) của người dùng đối với ứng dụng tương ứng. Có thể truyền appCode trong Body hoặc qua Header (appCode / app-code).")
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
@@ -58,7 +59,23 @@ public class IdentityController {
             content = @Content(schema = @Schema(implementation = ApiResponse.class))
         )
     })
-    public ApiResponse<TokenDataResponse> loginByPassword(@Valid @RequestBody LoginPasswordRequest request) {
+    public ApiResponse<TokenDataResponse> loginByPassword(
+            HttpServletRequest httpServletRequest,
+            @Valid @RequestBody LoginPasswordRequest request) {
+
+        if (request.getAppCode() == null || request.getAppCode().isBlank()) {
+            String appCode = httpServletRequest.getHeader("appCode");
+            if (appCode == null || appCode.isBlank()) {
+                appCode = httpServletRequest.getHeader("app-code");
+            }
+            if (appCode == null || appCode.isBlank()) {
+                appCode = httpServletRequest.getHeader("AppCode");
+            }
+            if (appCode != null && !appCode.isBlank()) {
+                request.setAppCode(appCode.trim());
+            }
+        }
+
         return ApiResponse.ok(identityService.loginByPassword(request));
     }
 

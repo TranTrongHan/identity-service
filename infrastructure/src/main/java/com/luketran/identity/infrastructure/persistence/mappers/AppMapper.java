@@ -7,6 +7,9 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AppMapper {
+    @Mapping(target = "roles", ignore = true)
+    @Mapping(target = "permissions", ignore = true)
+    @Mapping(target = "accesses", ignore = true)
     App toDomain(AppJpaEntity appJpaEntity);
 
     @Mapping(target = "roles", ignore = true)
@@ -14,3 +17,4 @@ public interface AppMapper {
     @Mapping(target = "accesses", ignore = true)
     AppJpaEntity toJpaEntity(App app);
 }
+

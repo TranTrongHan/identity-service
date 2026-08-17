@@ -7,9 +7,11 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AppRoleMapper {
+    @Mapping(target = "permissionItems", ignore = true)
     AppRole toDomain(AppRoleJpaEntity entity);
 
     @Mapping(target = "permissionItems", ignore = true)
     @Mapping(target = "app", ignore = true)
     AppRoleJpaEntity toJpaEntity(AppRole domain);
 }
+

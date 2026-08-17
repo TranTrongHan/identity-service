@@ -7,8 +7,7 @@ import lombok.Data;
 @Data
 @Schema(description = "Thông tin yêu cầu đăng nhập bằng tài khoản và mật khẩu")
 public class LoginPasswordRequest {
-    @NotBlank(message = "AppCode required")
-    @Schema(description = "Mã định danh của ứng dụng cần đăng nhập", example = "IDENTITY", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Mã định danh của ứng dụng cần đăng nhập (có thể truyền trong body hoặc qua HTTP header 'appCode')", example = "IDENTITY")
     private String appCode;
 
     @NotBlank(message = "Username required")

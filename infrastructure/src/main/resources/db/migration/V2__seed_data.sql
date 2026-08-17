@@ -32,10 +32,11 @@ VALUES (
     '653dc4d4-ca05-45ac-83cd-e98fa91b890f',
     'Root Administrator',
     'khWMO6wl7cv8wln',
-    '$2a$10$rOzCq7YRiPHFAhMA6YLBGuWCNXP3KXSLNEd9PX3Cxo1bMYAsC5LWi',
+    '$2a$10$aU9P/oIUKTcVzPzydnTpp.Zfqjdu7JrdRzcTVR8qV5DuN33DnoGmm',
     0,
     NOW()
 );
+
 
 -- ============================================================
 -- 3. Root AccountAuth (login credential: username = "root")

@@ -38,8 +38,9 @@ public class AccountRepositoryAdapter implements AccountRepository {
     @Override
     public Optional<Account> findWithDetails(UUID id) {
         return jpaRepository.findWithDetailsById(id)
-                .map(mapper::toDomain);
+                .map(mapper::toDomainWithDetails);
     }
+
 
     @Override
     public List<Account> findAll() {
